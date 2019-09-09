@@ -1,0 +1,197 @@
+Q1.1)
+
+ece792@t11_vm4:~$ ifconfig
+ens3: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500
+        inet 192.168.122.64  netmask 255.255.255.0  broadcast 192.168.122.255
+        inet6 fe80::5054:ff:fef2:3815  prefixlen 64  scopeid 0x20<link>
+        ether 52:54:00:f2:38:15  txqueuelen 1000  (Ethernet)
+        RX packets 128171  bytes 6809804 (6.8 MB)
+        RX errors 0  dropped 124927  overruns 0  frame 0
+        TX packets 1883  bytes 238773 (238.7 KB)
+        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
+
+ens5: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500
+        inet 192.168.124.109  netmask 255.255.255.0  broadcast 192.168.124.255
+        inet6 fe80::5054:ff:fe2e:42b8  prefixlen 64  scopeid 0x20<link>
+        ether 52:54:00:2e:42:b8  txqueuelen 1000  (Ethernet)
+        RX packets 126603  bytes 6660665 (6.6 MB)
+        RX errors 0  dropped 124928  overruns 0  frame 0
+        TX packets 1376  bytes 129178 (129.1 KB)
+        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
+
+ens6: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500
+        inet 192.168.126.110  netmask 255.255.255.0  broadcast 192.168.126.255
+        inet6 fe80::5054:ff:fe52:8fb1  prefixlen 64  scopeid 0x20<link>
+        ether 52:54:00:52:8f:b1  txqueuelen 1000  (Ethernet)
+        RX packets 133859  bytes 16878895 (16.8 MB)
+        RX errors 0  dropped 124928  overruns 0  frame 0
+        TX packets 7109  bytes 603987 (603.9 KB)
+        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
+
+lo: flags=73<UP,LOOPBACK,RUNNING>  mtu 65536
+        inet 127.0.0.1  netmask 255.0.0.0
+        inet6 ::1  prefixlen 128  scopeid 0x10<host>
+        loop  txqueuelen 1000  (Local Loopback)
+        RX packets 534  bytes 48678 (48.6 KB)
+        RX errors 0  dropped 0  overruns 0  frame 0
+        TX packets 534  bytes 48678 (48.6 KB)
+        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
+
+
+
+
+Q1.2) [TODO]
+
+ece792@t11_vm4:~$ ip route show to match 8.8.8.8
+default via 192.168.126.1 dev ens6 proto dhcp src 192.168.126.110 metric 100 
+default via 192.168.124.1 dev ens5 proto dhcp src 192.168.124.109 metric 100 
+default via 192.168.122.1 dev ens3 proto dhcp src 192.168.122.64 metric 100 
+
+ece792@t11_vm4:~$ ip route get 8.8.8.8
+8.8.8.8 via 192.168.126.1 dev ens6 src 192.168.126.110 uid 1000 
+    cache 
+ece792@t11_vm4:~$ 
+
+//ip route get is the real time outgoing interface
+
+Q1.3)
+ece792@t11_vm4:~$ cat /etc/resolv.conf 
+# This file is managed by man:systemd-resolved(8). Do not edit.
+#
+# This is a dynamic resolv.conf file for connecting local clients to the
+# internal DNS stub resolver of systemd-resolved. This file lists all
+# configured search domains.
+#
+# Run "systemd-resolve --status" to see details about the uplink DNS servers
+# currently in use.
+#
+# Third party programs must not access this file directly, but only through the
+# symlink at /etc/resolv.conf. To manage man:resolv.conf(5) in a different way,
+# replace this symlink by a static file or a different symlink.
+#
+# See man:systemd-resolved.service(8) for details about the supported modes of
+# operation for /etc/resolv.conf.
+
+nameserver 127.0.0.53
+
+Q1.4)
+cat /var/lib/dhcp/dhclient.leases
+sudo grep -R "DHCPOFFER" /var/log/*
+cat /proc/net/arp
+
+
+Q1.5)
+No. of CPUS:
+
+ece792@t11_vm4:~$ lscpu
+Architecture:        x86_64
+CPU op-mode(s):      32-bit, 64-bit
+Byte Order:          Little Endian
+CPU(s):              4
+.
+.
+.
+
+
+From the command : cat /proc/cpuinfo
+
+For each CPU, the speed is 2194.840 MHz.
+
+
+Q1.6)
+ece792@t11_vm4:~$ cat /proc/meminfo
+MemTotal:       24683040 kB
+MemFree:        23792532 kB
+MemAvailable:   24141072 kB
+
+
+
+
+Q2.1)
+INITIAL SYSTEM STATE:
+
+ece792@t11_vm4:~$ mpstat -P ALL 2 3
+Linux 4.15.0-60-generic (t11_vm4) 	09/08/2019 	_x86_64_	(4 CPU)
+
+06:06:32 PM  CPU    %usr   %nice    %sys %iowait    %irq   %soft  %steal  %guest  %gnice   %idle
+06:06:34 PM  all    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00  100.00
+06:06:34 PM    0    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00  100.00
+06:06:34 PM    1    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00  100.00
+06:06:34 PM    2    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00  100.00
+06:06:34 PM    3    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00  100.00
+
+06:06:34 PM  CPU    %usr   %nice    %sys %iowait    %irq   %soft  %steal  %guest  %gnice   %idle
+06:06:36 PM  all    0.00    0.00    0.00    0.00    0.00    0.00    0.12    0.00    0.00   99.88
+06:06:36 PM    0    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00  100.00
+06:06:36 PM    1    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00  100.00
+06:06:36 PM    2    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00  100.00
+06:06:36 PM    3    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00  100.00
+
+06:06:36 PM  CPU    %usr   %nice    %sys %iowait    %irq   %soft  %steal  %guest  %gnice   %idle
+06:06:38 PM  all    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00  100.00
+06:06:38 PM    0    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00  100.00
+06:06:38 PM    1    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00  100.00
+06:06:38 PM    2    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00  100.00
+06:06:38 PM    3    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00  100.00
+
+Average:     CPU    %usr   %nice    %sys %iowait    %irq   %soft  %steal  %guest  %gnice   %idle
+Average:     all    0.00    0.00    0.00    0.00    0.00    0.00    0.04    0.00    0.00   99.96
+Average:       0    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00  100.00
+Average:       1    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00  100.00
+Average:       2    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00  100.00
+Average:       3    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00  100.00
+ece792@t11_vm4:~$ 
+
+
+ece792@t11_vm4:~$ stress-ng --cpu 5 --timeout 20s
+stress-ng: info:  [9836] dispatching hogs: 5 cpu
+stress-ng: info:  [9836] successful run completed in 20.04s
+
+
+ece792@t11_vm4:~$ mpstat -P ALL 2 3
+Linux 4.15.0-60-generic (t11_vm4) 	09/08/2019 	_x86_64_	(4 CPU)
+
+06:08:10 PM  CPU    %usr   %nice    %sys %iowait    %irq   %soft  %steal  %guest  %gnice   %idle
+06:08:12 PM  all   99.88    0.00    0.12    0.00    0.00    0.00    0.00    0.00    0.00    0.00
+06:08:12 PM    0  100.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00
+06:08:12 PM    1  100.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00
+06:08:12 PM    2   99.50    0.00    0.50    0.00    0.00    0.00    0.00    0.00    0.00    0.00
+06:08:12 PM    3  100.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00
+
+06:08:12 PM  CPU    %usr   %nice    %sys %iowait    %irq   %soft  %steal  %guest  %gnice   %idle
+06:08:14 PM  all  100.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00
+06:08:14 PM    0  100.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00
+06:08:14 PM    1  100.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00
+06:08:14 PM    2  100.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00
+06:08:14 PM    3  100.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00
+
+06:08:14 PM  CPU    %usr   %nice    %sys %iowait    %irq   %soft  %steal  %guest  %gnice   %idle
+06:08:16 PM  all   99.75    0.00    0.25    0.00    0.00    0.00    0.00    0.00    0.00    0.00
+06:08:16 PM    0  100.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00
+06:08:16 PM    1   99.50    0.00    0.50    0.00    0.00    0.00    0.00    0.00    0.00    0.00
+06:08:16 PM    2   99.50    0.00    0.50    0.00    0.00    0.00    0.00    0.00    0.00    0.00
+06:08:16 PM    3  100.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00
+
+Average:     CPU    %usr   %nice    %sys %iowait    %irq   %soft  %steal  %guest  %gnice   %idle
+Average:     all   99.88    0.00    0.12    0.00    0.00    0.00    0.00    0.00    0.00    0.00
+Average:       0  100.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00
+Average:       1   99.83    0.00    0.17    0.00    0.00    0.00    0.00    0.00    0.00    0.00
+Average:       2   99.67    0.00    0.33    0.00    0.00    0.00    0.00    0.00    0.00    0.00
+Average:       3  100.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00
+
+
+Q2.2)
+
+ece792@t11_vm4:~$ dstat --top-mem 2 3
+--most-expensive-
+  memory process 
+snapd       25.0M
+snapd       25.0M
+snapd       25.0M
+
+
+Q3)
+
+<screensoht>
+
+
