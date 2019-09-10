@@ -16,8 +16,5 @@ uptime | awk '{print $8"\t" $9"\t" $10"\n"}' >> testlog.csv
 
 now=$((now+1))
 
-#echo $(date "+%Y/%m/%d-%H:%M:%S") >> testlog.csv;
-#cat /proc/loadavg >> testlog;
-
 done
 
