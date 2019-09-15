@@ -15,10 +15,10 @@ while [ $now -lt $2 ]
 
 do
 printf "$(date "+%Y/%m/%d-%H:%M:%S,")\t" >> testlog.csv
-uptime | awk '{print $8"\t" $9"\t" $10"\n"}' >> testlog.csv
+uptime | awk '{print $10"\t" $11"\t" $12""}' >> testlog.csv
 
-a=$(uptime | awk '{print $8}')
-b=$(uptime | awk '{print $9}')
+a=$(uptime | awk '{print $10}')
+b=$(uptime | awk '{print $11}')
 
 if [ $a > $3 ]
 then 
