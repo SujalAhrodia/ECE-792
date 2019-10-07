@@ -1,6 +1,8 @@
 import libvirt
 import sys
 from time import sleep
+import datetime
+import csv
 
 cl=libvirt.open("qemu:///system")
 
@@ -46,18 +48,40 @@ sorted_mems = []
 sorted_cpus = sorted(cpus.items(), key=lambda x: x[1][1])
 sorted_mems = sorted(mems.items(), key=lambda x: x[1][1])
 
-if sys.argv[1] == "CPU":
-    print ("------------------")
-    print ("Sorted List of VMS:")
-    print ("------------------")
-    for i in sorted_cpus:
-        print ("VM Name: "+ str(i[1][0]))
-        print ("CPU Usage: "+ str(i[1][1])+ "%" )
+try:
 
-if sys.argv[1] == "MEM":
-    print ("------------------")
-    print ("Sorted List of VMS:")
-    print ("------------------")
-    for i in sorted_mems:
-        print ("VM Name: "+ str(i[1][0]))
-        print ("MEM Usage: "+ str(i[1][1])+ "%" )
+    if sys.argv[1] == "CPU":
+        print ("------------------")
+        print ("Sorted List of VMS:")
+        print ("------------------")
+        for i in sorted_cpus:
+            print ("VM Name: "+ str(i[1][0]))
+            print ("CPU Usage: "+ str(i[1][1])+ "%" )
+        
+        print ("------------------")
+        print ("Threshold Check")
+        print ("------------------")
+
+        t = float(raw_input("Enter the threshold value for CPU Usage: "))
+
+        for i in sorted_cpus:
+            if i[1][1] > t :
+                timestamp = str(datetime.datetime.now())
+                msg = (str(i[1][0]) + "\t" + timestamp + "\t" + str(i[1][1]) + "%" )
+                print (msg)
+                with open('alert.txt', 'a') as f:
+                    # wr = csv.writer(f, quoting=csv.QUOTE_MINIMAL,delimiter=' ')
+                    f.write(msg + "\n")
+                    f.close()
+
+    elif sys.argv[1] == "MEM":
+        print ("------------------")
+        print ("Sorted List of VMS:")
+        print ("------------------")
+        for i in sorted_mems:
+            print ("VM Name: "+ str(i[1][0]))
+            print ("MEM Usage: "+ str(i[1][1])+ "%" )
+
+except:
+    print ("Please give arguments. eg: CPU/MEM")
+    exit(1)
