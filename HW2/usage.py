@@ -2,7 +2,6 @@ import libvirt
 import sys
 from time import sleep
 import datetime
-import csv
 
 cl=libvirt.open("qemu:///system")
 
