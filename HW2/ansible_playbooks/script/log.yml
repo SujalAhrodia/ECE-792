@@ -1,0 +1,16 @@
+---
+- hosts: all
+  gather_facts: true
+  become: true
+
+  tasks:
+    - name: Create directory
+      command: >
+              sudo mkdir -p /var/customlog/logs
+
+    - name: Log the values in the respective devices
+      script: /home/ece792/script/script.py
+      args:
+        executable: python
+      tags:
+        - log

@@ -1,0 +1,39 @@
+---
+ - hosts: localhost
+   gather_facts: false
+   become: true
+
+   tasks:
+     - name: Add dependency
+       pip:
+         name: lxml
+
+     - name: Create OVS bridge
+       openvswitch_bridge:
+         bridge: arangar2OVS
+         state: present
+       tags:
+         - ovs
+
+     - name: Change OVS bridge to routed mode
+       command: >
+               sudo ip addr add 12.0.0.2/24 dev arangar2OVS
+       tags:
+         - route
+
+     - name: Add network 
+       virt_net:
+         command: define
+         name: arangar2-netL3
+         xml: "{{ lookup('template','/home/ece792/net3.xml.j2') }}"
+       tags:
+         - define
+
+     - name: Start network
+       virt_net:
+         command: start
+         name: arangar2-netL3
+       tags:
+         - start
+
+

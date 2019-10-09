@@ -1,0 +1,24 @@
+---
+ - hosts: localhost
+   tasks:
+     - name: Get existing VMs
+       virt:
+         command: list_vms
+       register: result
+
+     - debug:
+         var: result
+    
+     - name: Create VM
+       command: >
+           sudo virt-install -n {{ item }} -r 2048 --vcpu=2 --cpu host --disk
+           path=/var/lib/libvirt/images/{{ item }}.img,size=20 
+           --network network=arangar2-netL3 -c
+           /var/lib/libvirt/images/CentOS-6.10-x86_64-minimal.iso -v --noautoconsole
+           --check all=off
+       with_items:
+               - arangar2VM3
+               - arangar2VM4
+       when: item not in result.list_vms
+       tags:
+         - vm
