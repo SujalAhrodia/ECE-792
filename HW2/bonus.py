@@ -10,9 +10,21 @@ if cl == None:
     print ("Failed to connect", sys.stderr)
     exit(1)
 
-interval = int(raw_input("Enter the polling interval : "))
-window = int(raw_input("Enter the window size : "))
-total = int(raw_input("Enter the total time : "))
+bool_cpu=0
+bool_mem=0
+
+try:
+    if sys.argv[1] == "CPU":
+        bool_cpu=1
+    if sys.argv[1] == "MEM":
+        bool_mem=1
+    
+    interval = int(raw_input("Enter the polling interval : "))
+    window = int(raw_input("Enter the window size : "))
+    total = int(raw_input("Enter the total time : "))
+except:
+    print ("Please give arguments. eg: CPU/MEM")
+    exit(1)
 
 vm=cl.listDomainsID()
 cpus = {}
@@ -52,67 +64,65 @@ for i in vm:
 #no. of entries 
 n = total/interval
 
-# moving averages of each VM
-avgs = {}
+# moving averages of each VM (CPU)
+c_avgs = {}
 
-#computing moving averages
+#computing moving averages for CPU usage
 for k in cpus.values():
-    # print(k[1][0])
     avg=[]
     for i in range (0, n-window+1):
         sum1=0
         for j in range(i, i+window):
             sum1+=k[1][j]
         avg.append(float(sum1/window))
-    avgs[k[0]] = avg       
-    
+    c_avgs[k[0]] = avg       
 
-# # list of sorted cpus
-sorted_cpus= []
+# moving averages of each VM(MEM)    
+m_avgs = {}    
 
-# #list of sorted mems
-sorted_mems = []
+#computing moving averages for CPU usage
+for k in mems.values():
+    avg=[]
+    for i in range (0, n-window+1):
+        sum1=0
+        for j in range(i, i+window):
+            sum1+=k[1][j]
+        avg.append(float(sum1/window))
+    m_avgs[k[0]] = avg       
 
-# # sorting
-# for i in cpus:
+if bool_cpu:
+    # sorting
+    for i in range (0, n-window+1):
+        # list of sorted cpus
+        sorted_cpus= []
 
-# sorted_cpus = sorted(cpus.items(), key=lambda x: x[1][1])
-# sorted_mems = sorted(mems.items(), key=lambda x: x[1][1])
+        print ("------------------")
+        print ("At Polling interval : " + str(i+1))
+        print ("------------------")
+        print ("Sorted List of VMS:")
+        print ("------------------")
 
-# try:
+        sorted_cpus = sorted(c_avgs.items(), key=lambda x: x[1][i])
 
-#     if sys.argv[1] == "CPU":
-#         print ("------------------")
-#         print ("Sorted List of VMS:")
-#         print ("------------------")
-#         for i in sorted_cpus:
-#             print ("VM Name: "+ str(i[1][0]))
-#             print ("CPU Usage: "+ str(i[1][1])+ "%" )
+        for j in sorted_cpus:
+            print ("VM Name: "+ str(j[0]))
+            print ("CPU Usage: "+ str(j[1][i])+ "%" )
+
+if bool_mem:
+    for i in range (0, n-window+1):
+
+        # list of sorted mems
+        sorted_mems = []
         
-#         print ("------------------")
-#         print ("Threshold Check")
-#         print ("------------------")
+        print ("------------------")
+        print ("At Polling interval : " + str(i+1))
+        print ("------------------")
+        print ("Sorted List of VMS:")
+        print ("------------------")
 
-#         t = float(raw_input("Enter the threshold value for CPU Usage: "))
+        sorted_mems = sorted(c_avgs.items(), key=lambda x: x[1][i])
 
-#         for i in sorted_cpus:
-#             if i[1][1] > t :
-#                 timestamp = str(datetime.datetime.now())
-#                 msg = (str(i[1][0]) + "\t" + timestamp + "\t" + str(i[1][1]) + "%" )
-#                 print (msg)
-#                 with open('alert.txt', 'a') as f:
-#                     # wr = csv.writer(f, quoting=csv.QUOTE_MINIMAL,delimiter=' ')
-#                     f.write(msg + "\n")
-#                     f.close()
+        for j in sorted_mems:
+            print ("VM Name: "+ str(j[0]))
+            print ("MEM Usage: "+ str(j[1][i])+ "%" )
 
-#     elif sys.argv[1] == "MEM":
-#         print ("------------------")
-#         print ("Sorted List of VMS:")
-#         print ("------------------")
-#         for i in sorted_mems:
-#             print ("VM Name: "+ str(i[1][0]))
-#             print ("MEM Usage: "+ str(i[1][1])+ "%" )
-
-# except:
-#     print ("Please give arguments. eg: CPU/MEM")
-#     exit(1)

@@ -70,7 +70,6 @@ try:
                 msg = (str(i[1][0]) + "\t" + timestamp + "\t" + str(i[1][1]) + "%" )
                 print (msg)
                 with open('alert.txt', 'a') as f:
-                    # wr = csv.writer(f, quoting=csv.QUOTE_MINIMAL,delimiter=' ')
                     f.write(msg + "\n")
                     f.close()
 
