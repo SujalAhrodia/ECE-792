@@ -62,33 +62,21 @@ for i in vm:
 #no. of entries 
 n = total/interval
 
-# moving averages of each VM (CPU)
-c_avgs = {}
-
-#computing moving averages for CPU usage
-for k in cpus.values():
-    avg=[]
-    for i in range (0, n-window+1):
-        sum1=0
-        for j in range(i, i+window):
-            sum1+=k[1][j]
-        avg.append(float(sum1/window))
-    c_avgs[k[0]] = avg       
-
-# moving averages of each VM(MEM)    
-m_avgs = {}    
-
-#computing moving averages for CPU usage
-for k in mems.values():
-    avg=[]
-    for i in range (0, n-window+1):
-        sum1=0
-        for j in range(i, i+window):
-            sum1+=k[1][j]
-        avg.append(float(sum1/window))
-    m_avgs[k[0]] = avg       
-
 if bool_cpu:
+    # moving averages of each VM (CPU)
+    c_avgs = {}
+
+    #computing moving averages for CPU usage
+    for k in cpus.values():
+        avg=[]
+        for i in range (0, n-window+1):
+            sum1=0
+            for j in range(i, i+window):
+                sum1+=k[1][j]
+            avg.append(float(sum1/window))
+        c_avgs[k[0]] = avg       
+
+    print (c_avgs)
     # sorting
     for i in range (0, n-window+1):
         # list of sorted cpus
@@ -107,20 +95,33 @@ if bool_cpu:
             print ("CPU Usage: "+ str(j[1][i])+ "%" )
 
 if bool_mem:
-    for i in range (0, n-window+1):
+    # moving averages of each VM(MEM)    
+    m_avgs = {}    
 
-        # list of sorted mems
-        sorted_mems = []
-        
-        print ("------------------")
-        print ("At Polling interval : " + str(i+1))
-        print ("------------------")
-        print ("Sorted List of VMS:")
-        print ("------------------")
+    #computing moving averages for MEM usage
+    for k in mems.values():
+        avg=[]
+        for i in range (0, n-window+1):
+            sum1=0
+            for j in range(i, i+window):
+                sum1+=k[1][j]
+            avg.append(float(sum1/window))
+        m_avgs[k[0]] = avg       
 
-        sorted_mems = sorted(c_avgs.items(), key=lambda x: x[1][i])
+        for i in range (0, n-window+1):
 
-        for j in sorted_mems:
-            print ("VM Name: "+ str(j[0]))
-            print ("MEM Usage: "+ str(j[1][i])+ "%" )
+            # list of sorted mems
+            sorted_mems = []
+            
+            print ("------------------")
+            print ("At Polling interval : " + str(i+1))
+            print ("------------------")
+            print ("Sorted List of VMS:")
+            print ("------------------")
+
+            sorted_mems = sorted(c_avgs.items(), key=lambda x: x[1][i])
+
+            for j in sorted_mems:
+                print ("VM Name: "+ str(j[0]))
+                print ("MEM Usage: "+ str(j[1][i])+ "%" )
 
