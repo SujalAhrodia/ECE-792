@@ -9,7 +9,7 @@
               sudo mkdir -p /var/customlog/logs
 
     - name: Log the values in the respective devices
-      script: /home/ece792/script/script.py
+      script: /home/ece792/ECE-792/HW2/ansible_playbooks/script/script.py
       args:
         executable: python
       tags:

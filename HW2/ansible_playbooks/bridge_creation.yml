@@ -25,7 +25,7 @@
        virt_net:
          command: define
          name: arangar2-netL3
-         xml: "{{ lookup('template','/home/ece792/net3.xml.j2') }}"
+         xml: "{{ lookup('template','/home/ece792/ECE-792/HW2/ansible_playbooks/net3.xml.j2') }}"
        tags:
          - define
 
