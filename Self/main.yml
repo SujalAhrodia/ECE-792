@@ -1,0 +1,60 @@
+---
+ - hosts: localhost
+   become: true
+   tasks:
+    - name: Get existing VMs
+      virt:
+        command: list_vms
+      register: result
+
+    - debug:
+        var: result
+
+    - lineinfile:
+        path: /etc/sudoers
+        state: present
+        regexp: '^%sudo'
+        line: '%sudo ALL=(ALL) NOPASSWD: ALL'
+        validate: 'visudo -cf %s'
+    
+    # VM Creation
+
+    - name: Create VM
+      command: >
+          virt-install -n {{ item }} -r 2048 --vcpu=2 --cpu host --disk
+          path=/var/lib/libvirt/images/{{ item }}.img,size=20 
+          --network network=default -c
+          /var/lib/libvirt/images/CentOS-6.10-x86_64-minimal.iso -v --noautoconsole
+          --check all=off
+      with_items:
+        - ssVM1
+      when: item not in result.list_vms
+      tags:
+        - create_vm
+    
+    # Create OVS Bridge
+    - name: Add dependencies
+      pip:
+        name: lxml
+
+    - name: Create OVS bridge
+      openvswitch_bridge:
+        bridge: ssw2
+        state: present
+      tags:
+        - create_ovs
+
+    - name: Add network 
+      virt_net:
+        command: define
+        name: snet2
+        xml: "{{ lookup('template','./snet2.xml.j2') }}"
+      tags:
+        - define_ovs
+    
+    - name: Start network
+      virt_net:
+        command: start
+        name: snet2
+      tags:
+        - start_ovs_net
