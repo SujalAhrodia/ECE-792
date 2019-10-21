@@ -58,3 +58,28 @@
         name: snet2
       tags:
         - start_ovs_net
+    
+    # Attaching 3 interfaces to the VM for each network
+    - name: Attaching interface to default
+      command: virsh attach-interface --domain ssVM1 --type network --source {{item}} --model virtio --config --live
+      with_items:
+        - snet1
+        - snet2
+      tags:
+        - attach_interfaces
+    
+    - name: Shutdown the VM
+      virt:
+        command: destroy
+        name: ssVM1
+
+    - name: Clone the VM
+      command: virt-clone --original ssVM1 --name ssVM2 --auto-clone
+    
+    - name: Start VMs
+      virt:
+        command: start
+        name: "{{item}}"
+      with_items:
+        - ssVM1
+        - ssVM2

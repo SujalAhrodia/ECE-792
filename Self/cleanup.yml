@@ -1,0 +1,13 @@
+---
+ - hosts: localhost
+   become: true
+   tasks:
+    - name: Shut down the VM
+      virt:
+        command: destroy
+        name: ssVM1
+
+    - name: Undefine the VM
+      virt:
+        command: undefine
+        name: ssVM1
