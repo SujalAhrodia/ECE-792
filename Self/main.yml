@@ -44,7 +44,7 @@
       tags:
         - create_ovs
 
-    - name: Add network 
+    - name: Define network 
       virt_net:
         command: define
         name: snet2
@@ -68,18 +68,18 @@
       tags:
         - attach_interfaces
     
-    - name: Shutdown the VM
-      virt:
-        command: destroy
-        name: ssVM1
+    # - name: Shutdown the VM
+    #   virt:
+    #     command: destroy
+    #     name: ssVM1
 
-    - name: Clone the VM
-      command: virt-clone --original ssVM1 --name ssVM2 --auto-clone
+    # - name: Clone the VM
+    #   command: virt-clone --original ssVM1 --name ssVM2 --auto-clone
     
-    - name: Start VMs
-      virt:
-        command: start
-        name: "{{item}}"
-      with_items:
-        - ssVM1
-        - ssVM2
+    # - name: Start VMs
+    #   virt:
+    #     command: start
+    #     name: "{{item}}"
+    #   with_items:
+    #     - ssVM1
+    #     - ssVM2
