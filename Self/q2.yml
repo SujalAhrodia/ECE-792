@@ -1,62 +1,124 @@
 ---
  - hosts: localhost
    become: true
+   vars:
+    vmVar: "{{ lookup('file', './input.json') | from_json }}"
+    swVar: "{{ lookup('file', './switches.json') | from_json }}"
    tasks:
     # Part 1: Create OVS Bridges 
     - name: Add dependencies
       pip:
         name: lxml
+    
+    - name: Making list of switches
+      vars: 
+        SWS: []
+      set_fact:
+        SWS: "{{ SWS + [item.name] }}"
+      with_items:
+        - "{{swVar.input}}"
+      tags:
+        - make_sw_list
 
-    - name: Create OVS bridge
+    - name: Create OVS bridges
       openvswitch_bridge:
         bridge: "{{item}}"
         state: present
       with_items:
-        # - q2sw1
-        - q2sw2
-        - q2sw3
-        - q2sw4
+        - "{{SWS}}"
       tags:
         - create_ovs
-     
-    - name: Change OVS bridge to routed mode
-      command: sudo ip addr add 60.0.0.1/24 dev q2sw3
-      tags:
-        - route
-    
-    - name: Change OVS bridge to routed mode
-      command: sudo ip addr add 70.0.0.1/24 dev q2sw4
-      tags:
-        - route
-    
-    # Part 2: Defining the networks
-    - name: Define network
-      virt_net:
-        command: define
-        name: "{{item.0}}"
-        xml: "{{ lookup('template','./{{item.1}}') }}"
-      with_together:
-        - ["L2", "L3", "Other"]
-        - ["L2.xml.j2", "L3.xml.j2", "Other.xml.j2"]
-      tags:
-        - define_ovs_network
-    
-    - name: Start network
-      virt_net:
-        command: start
-        name: "{{item}}"
+
+    - name: Assign IP to switches
+      command: sudo ip addr add {{item.IP}} dev {{item.name}}
       with_items:
-        - L2
-        - L3
-        - Other
+        - "{{swVar.input}}"
+      when: item.IP is defined
       tags:
-        - start_ovs_net
+        - route
     
-    # - name: Attaching interface to OVS network
-    #   command: virsh attach-interface --domain {{item.0}} --type network --source {{item.1}} --model virtio --config --live
-    #   with_together:
-    #     - ["ssVM1", "ssVM2"]
-    #     - ["snet3", "snet4"]
+    - name: Start the switches
+      command: sudo ip link set dev {{item.name}} up
+      with_items:
+        - "{{swVar.input}}"
+      tags:
+        - init
+
+    # - name: Assign IP to q2sw3
+    #   command: sudo ip addr add 60.0.0.1/24 dev q2sw3
     #   tags:
-    #     - attach_interfaces
+    #     - route
     
+    # - name: Assign IP to q2sw4
+    #   command: sudo ip addr add 70.0.0.1/24 dev q2sw4
+    #   tags:
+    #     - route
+
+    # # Add ip table rule for NAT bridge
+
+    # # Part 2: Defining the networks
+    # - name: Define network
+    #   virt_net:
+    #     command: define
+    #     name: "{{item.0}}"
+    #     xml: "{{ lookup('template','./{{item.1}}') }}"
+    #   with_together:
+    #     - ["L2", "L3", "Other"]
+    #     - ["L2.xml.j2", "L3.xml.j2", "Other.xml.j2"]
+    #   tags:
+    #     - define_ovs_network
+    
+    # - name: Start network
+    #   virt_net:
+    #     command: start
+    #     name: "{{item}}"
+    #   with_items:
+    #     - L2
+    #     - L3
+    #     - Other
+    #   tags:
+    #     - start_ovs_net
+    
+    # - name: Making list of VMs 
+    #   vars: 
+    #     VMS: []
+    #   set_fact:
+    #     VMS: "{{ VMS + [item.name] }}"
+    #   with_items:
+    #     - "{{vmVar.input}}"
+    #   tags:
+    #     - make_vm_list
+
+    # # - name: Attaching interface to OVS network
+    #   # command: virsh attach-interface --domain {{item.0}} --type network --source {{item.1}} --model virtio --config --live
+    # #   debug:
+    # #     msg: "{{item}}" 
+    # #   with_items:
+    # #     - "{{jsonVar}}"
+    # #   tags:
+    # #     - attach_interfaces
+    
+    # - name: Attach interfaces for VM1
+    #   command: virsh attach-interface --domain {{VMS[0]}} --type network --source {{item}} --model virtio --config --live
+    #   # debug:
+    #     # msg: "{{ VMS[0] }} with {{ item }}"
+    #   with_items:
+    #     - "{{vmVar.input[0].list}}"
+    #   tags:
+    #     - test
+    
+    # - name: Attach interfaces for VM2
+    #   debug:
+    #     msg: "{{ VMS[1] }} with {{ item }}"
+    #   with_items:
+    #     - "{{vmVar.input[1].list}}"
+    #   tags:
+    #     - test
+
+    # - name: Attach interfaces for VM3
+    #   debug:
+    #     msg: "{{ VMS[2] }} with {{ item }}"
+    #   with_items:
+    #     - "{{vmVar.input[2].list}}"
+    #   tags:
+    #     - test
