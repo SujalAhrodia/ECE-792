@@ -46,7 +46,7 @@
 
     # Add ip table rule for NAT bridge
 
-    Part 2: Defining the networks
+    # Part 2: Defining the networks
     - name: Define network
       virt_net:
         command: define
