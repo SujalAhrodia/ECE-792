@@ -44,7 +44,7 @@
       tags:
         - init
 
-    Add ip table rule for NAT bridge
+    # Add ip table rule for NAT bridge
 
     Part 2: Defining the networks
     - name: Define network
