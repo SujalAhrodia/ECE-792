@@ -78,6 +78,21 @@
         - "{{vmVar.input}}"
       tags:
         - make_vm_list
+    
+    # VM Creation
+
+    # - name: Create VM
+    #   command: >
+    #       virt-install -n {{ item }} -r 2048 --vcpu=2 --cpu host --disk
+    #       path=/var/lib/libvirt/images/{{ item }}.img,size=20 
+    #       --network network=default -c
+    #       /var/lib/libvirt/images/CentOS-6.10-x86_64-minimal.iso -v --noautoconsole
+    #       --check all=off
+    #   with_items:
+    #     - "{{VMS}}"
+    #   when: item not in result.list_vms
+    #   tags:
+    #     - create_vm
 
     # # - name: Attaching interface to OVS network
     #   # command: virsh attach-interface --domain {{item.0}} --type network --source {{item.1}} --model virtio --config --live
@@ -90,8 +105,6 @@
     
     # - name: Attach interfaces for VM1
     #   command: virsh attach-interface --domain {{VMS[0]}} --type network --source {{item}} --model virtio --config --live
-    #   # debug:
-    #     # msg: "{{ VMS[0] }} with {{ item }}"
     #   with_items:
     #     - "{{vmVar.input[0].list}}"
     #   tags:
