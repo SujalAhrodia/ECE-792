@@ -1,0 +1,17 @@
+---
+- name: Attach
+  debug:
+    msg: "{{item}} with {{outer_item}}"
+  with_items:
+    - "{{inner_item.list}}"
+  when: inner_item.name == outer_item
+
+
+# - name: Attaching interface to OVS network
+  # command: virsh attach-interface --domain {{item.0}} --type network --source {{item.1}} --model virtio --config --live
+#   debug:
+#     msg: "{{item}}" 
+#   with_items:
+#     - "{{jsonVar}}"
+#   tags:
+#     - attach_interfaces

@@ -20,54 +20,54 @@
       tags:
         - make_sw_list
 
-    - name: Create OVS bridges
-      openvswitch_bridge:
-        bridge: "{{item}}"
-        state: present
-      with_items:
-        - "{{SWS}}"
-      tags:
-        - create_ovs
+    # - name: Create OVS bridges
+    #   openvswitch_bridge:
+    #     bridge: "{{item}}"
+    #     state: present
+    #   with_items:
+    #     - "{{SWS}}"
+    #   tags:
+    #     - create_ovs
 
-    - name: Assign IP to switches
-      command: sudo ip addr add {{item.IP}} dev {{item.name}}
-      with_items:
-        - "{{swVar.input}}"
-      when: item.IP is defined
-      tags:
-        - route
+    # - name: Assign IP to switches
+    #   command: sudo ip addr add {{item.IP}} dev {{item.name}}
+    #   with_items:
+    #     - "{{swVar.input}}"
+    #   when: item.IP is defined
+    #   tags:
+    #     - route
     
-    - name: Start the switches
-      command: sudo ip link set dev {{item.name}} up
-      with_items:
-        - "{{swVar.input}}"
-      tags:
-        - init
+    # - name: Start the switches
+    #   command: sudo ip link set dev {{item.name}} up
+    #   with_items:
+    #     - "{{swVar.input}}"
+    #   tags:
+    #     - init
 
     # Add ip table rule for NAT bridge
 
     # Part 2: Defining the networks
-    - name: Define network
-      virt_net:
-        command: define
-        name: "{{item.0}}"
-        xml: "{{ lookup('template','./{{item.1}}') }}"
-      with_together:
-        - ["L2", "L3", "Other"]
-        - ["L2.xml.j2", "L3.xml.j2", "Other.xml.j2"]
-      tags:
-        - define_ovs_network
+    # - name: Define network
+    #   virt_net:
+    #     command: define
+    #     name: "{{item.0}}"
+    #     xml: "{{ lookup('template','./{{item.1}}') }}"
+    #   with_together:
+    #     - ["L2", "L3", "Other"]
+    #     - ["L2.xml.j2", "L3.xml.j2", "Other.xml.j2"]
+    #   tags:
+    #     - define_ovs_network
     
-    - name: Start network
-      virt_net:
-        command: start
-        name: "{{item}}"
-      with_items:
-        - L2
-        - L3
-        - Other
-      tags:
-        - start_ovs_net
+    # - name: Start network
+    #   virt_net:
+    #     command: start
+    #     name: "{{item}}"
+    #   with_items:
+    #     - L2
+    #     - L3
+    #     - Other
+    #   tags:
+    #     - start_ovs_net
     
     - name: Making list of VMs 
       vars: 
@@ -79,12 +79,17 @@
       tags:
         - make_vm_list
     
-    # VM Creation
+    - include_tasks: step1.yml
+      with_items:
+        - "{{VMS}}"
+      loop_control:
+        loop_var: outer_item
 
+    # VM Creation
     # - name: Create VM
     #   command: >
     #       virt-install -n {{ item }} -r 2048 --vcpu=2 --cpu host --disk
-    #       path=/var/lib/libvirt/images/{{ item }}.img,size=20 
+    #       path=/var/lib/libvirt/images/{{ item }}.img,size=12 
     #       --network network=default -c
     #       /var/lib/libvirt/images/CentOS-6.10-x86_64-minimal.iso -v --noautoconsole
     #       --check all=off
@@ -94,34 +99,4 @@
     #   tags:
     #     - create_vm
 
-    # # - name: Attaching interface to OVS network
-    #   # command: virsh attach-interface --domain {{item.0}} --type network --source {{item.1}} --model virtio --config --live
-    # #   debug:
-    # #     msg: "{{item}}" 
-    # #   with_items:
-    # #     - "{{jsonVar}}"
-    # #   tags:
-    # #     - attach_interfaces
     
-    # - name: Attach interfaces for VM1
-    #   command: virsh attach-interface --domain {{VMS[0]}} --type network --source {{item}} --model virtio --config --live
-    #   with_items:
-    #     - "{{vmVar.input[0].list}}"
-    #   tags:
-    #     - test
-    
-    # - name: Attach interfaces for VM2
-    #   debug:
-    #     msg: "{{ VMS[1] }} with {{ item }}"
-    #   with_items:
-    #     - "{{vmVar.input[1].list}}"
-    #   tags:
-    #     - test
-
-    # - name: Attach interfaces for VM3
-    #   debug:
-    #     msg: "{{ VMS[2] }} with {{ item }}"
-    #   with_items:
-    #     - "{{vmVar.input[2].list}}"
-    #   tags:
-    #     - test
