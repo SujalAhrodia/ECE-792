@@ -44,50 +44,40 @@
       tags:
         - init
 
-    # - name: Assign IP to q2sw3
-    #   command: sudo ip addr add 60.0.0.1/24 dev q2sw3
-    #   tags:
-    #     - route
-    
-    # - name: Assign IP to q2sw4
-    #   command: sudo ip addr add 70.0.0.1/24 dev q2sw4
-    #   tags:
-    #     - route
+    # Add ip table rule for NAT bridge
 
-    # # Add ip table rule for NAT bridge
-
-    # # Part 2: Defining the networks
-    # - name: Define network
-    #   virt_net:
-    #     command: define
-    #     name: "{{item.0}}"
-    #     xml: "{{ lookup('template','./{{item.1}}') }}"
-    #   with_together:
-    #     - ["L2", "L3", "Other"]
-    #     - ["L2.xml.j2", "L3.xml.j2", "Other.xml.j2"]
-    #   tags:
-    #     - define_ovs_network
+    # Part 2: Defining the networks
+    - name: Define network
+      virt_net:
+        command: define
+        name: "{{item.0}}"
+        xml: "{{ lookup('template','./{{item.1}}') }}"
+      with_together:
+        - ["L2", "L3", "Other"]
+        - ["L2.xml.j2", "L3.xml.j2", "Other.xml.j2"]
+      tags:
+        - define_ovs_network
     
-    # - name: Start network
-    #   virt_net:
-    #     command: start
-    #     name: "{{item}}"
-    #   with_items:
-    #     - L2
-    #     - L3
-    #     - Other
-    #   tags:
-    #     - start_ovs_net
+    - name: Start network
+      virt_net:
+        command: start
+        name: "{{item}}"
+      with_items:
+        - L2
+        - L3
+        - Other
+      tags:
+        - start_ovs_net
     
-    # - name: Making list of VMs 
-    #   vars: 
-    #     VMS: []
-    #   set_fact:
-    #     VMS: "{{ VMS + [item.name] }}"
-    #   with_items:
-    #     - "{{vmVar.input}}"
-    #   tags:
-    #     - make_vm_list
+    - name: Making list of VMs 
+      vars: 
+        VMS: []
+      set_fact:
+        VMS: "{{ VMS + [item.name] }}"
+      with_items:
+        - "{{vmVar.input}}"
+      tags:
+        - make_vm_list
 
     # # - name: Attaching interface to OVS network
     #   # command: virsh attach-interface --domain {{item.0}} --type network --source {{item.1}} --model virtio --config --live
