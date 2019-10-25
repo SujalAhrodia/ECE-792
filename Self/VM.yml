@@ -1,13 +1,19 @@
-    # VM Creation
-- name: Create VM
-  command: >
-      virt-install -n {{ item }} -r 2048 --vcpu=2 --cpu host --disk
-      path=/var/lib/libvirt/images/{{ item }}.img,size=12 
-      --network network=default -c
-      /var/lib/libvirt/images/CentOS-6.10-x86_64-minimal.iso -v --noautoconsole
-      --check all=off
+---
+- name: Get existing VMs
+  virt:
+    command: list_vms
+  register: result
+
+# VM creation
+- name: Create VMs
+  command: virt-clone --original base_VM -n {{item}} --auto-clone
   with_items:
     - "{{VMS}}"
   when: item not in result.list_vms
   tags:
     - create_vm
+
+- name: Start VMs
+  command: virsh start {{item}}
+  with_items:
+    - "{{VMS}}"

@@ -2,8 +2,8 @@
  - hosts: localhost
    become: true
    vars:
-    vmVar: "{{ lookup('file', './input.json') | from_json }}"
-    swVar: "{{ lookup('file', './switches.json') | from_json }}"
+    vmVar: "{{ lookup('file', './inputs/input.json') | from_json }}"
+    swVar: "{{ lookup('file', './inputs/switches.json') | from_json }}"
    tasks:
     # Part 1: Create OVS Bridges 
     - name: Add dependencies
@@ -51,10 +51,10 @@
       virt_net:
         command: define
         name: "{{item.0}}"
-        xml: "{{ lookup('template','./{{item.1}}') }}"
+        xml: "{{ lookup('template','./networks/{{item.1}}') }}"
       with_together:
-        - ["L2", "L3", "Other"]
-        - ["L2.xml.j2", "L3.xml.j2", "Other.xml.j2"]
+        - ["Internet", "L2", "L3", "Other"]
+        - ["Internet.xml.j2", "L2.xml.j2", "L3.xml.j2", "Other.xml.j2"]
       tags:
         - define_ovs_network
     
@@ -63,6 +63,7 @@
         command: start
         name: "{{item}}"
       with_items:
+        - Internet
         - L2
         - L3
         - Other
@@ -78,13 +79,34 @@
         - "{{vmVar.input}}"
       tags:
         - make_vm_list
+
+    - name: Get existing VMs
+      virt:
+        command: list_vms
+      register: result
+
+    # VM creation
+    - name: Create VMs
+      command: virt-clone --original base_VM -n {{item}} --auto-clone
+      with_items:
+        - "{{VMS}}"
+      when: item not in result.list_vms
+      tags:
+        - create_vm
     
+    - name: Start VMs
+      virt:
+        name: "{{item}}"
+        state: running
+      with_items:
+        - "{{VMS}}"
+    # Run dhclient inside each VMs
+
+    # Attaching interfaces
     - include_tasks: step1.yml
       with_items:
         - "{{VMS}}"
       loop_control:
         loop_var: outer_item
-
-
 
     
