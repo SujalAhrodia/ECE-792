@@ -1,0 +1,22 @@
+---
+- hosts: localhost
+  become: true
+  vars:
+    vmVar: "{{ lookup('file', './inputs/input.json') | from_json }}"
+
+  tasks:
+    - name: Making list of VMs 
+      vars: 
+        VMS: []
+      set_fact:
+        VMS: "{{ VMS + [item.name] }}"
+      with_items:
+        - "{{vmVar.input}}"
+      tags:
+        - make_vm_list
+
+    - include_tasks: step1.yml
+      with_items:
+        - "{{VMS}}"
+      loop_control:
+        loop_var: outer_item
