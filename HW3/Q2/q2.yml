@@ -14,17 +14,6 @@
         name: dnsmasq
         state: present
 
-    # Part 1: Create OVS Bridges 
-    # - name: Making list of switches
-    #   vars: 
-    #     SWS: []
-    #   set_fact:
-    #     SWS: "{{ SWS + [item.name] }}"
-    #   with_items:
-    #     - "{{swVar.input}}"
-    #   tags:
-    #     - make_sw_list
-
     - name: Create OVS bridges
       openvswitch_bridge:
         bridge: "{{item.name}}"
@@ -73,14 +62,14 @@
       tags:
         - start_ovs_net
     
-      #Add DNS Config via dnsmasq only for L3 and Internet
+      #Add DNS Config via dnsmasq only for Internet
     - name: Check file exists.
       stat:
         path: /etc/dnsmasq.d/dnsmasq.conf
       register: p
 
     - name: Flush dnsmasq.conf
-      command: cat /dev/null > /etc/dnsmasq.d/dnsmasq.conf
+      command: 'cp /dev/null /etc/dnsmasq.d/dnsmasq.conf'
       when:  p.stat.exists
 
     - name: DNS Config
@@ -89,51 +78,52 @@
         - "{{swVar.input}}"
       when: "'q2sw1' in item.name or 'q2sw3' in item.name"
       
-      #Add ip table rule for L3 and Internet
+      #Add ip table rule for Internet
     - name: Configuring iptables for Internet
       command: bash rule.sh {{item.IP}} {{item.name}} 
       with_items:
         - "{{swVar.input}}"
       when: "'q2sw1' in item.name"
-      
-    # - name: Making list of VMs 
-    #   vars: 
-    #     VMS: []
-    #   set_fact:
-    #     VMS: "{{ VMS + [item.name] }}"
-    #   with_items:
-    #     - "{{vmVar.input}}"
-    #   tags:
-    #     - make_vm_list
+      tags:
+        - iptable
+        
+    - name: Making list of input VMs 
+      vars: 
+        VMS: []
+      set_fact:
+        VMS: "{{ VMS + [item.name] }}"
+      with_items:
+        - "{{vmVar.input}}"
+      tags:
+        - make_vm_list
 
-    # - name: Get existing VMs
-    #   virt:
-    #     command: list_vms
-    #   register: result
+    - name: Get existing VMs
+      virt:
+        command: list_vms
+      register: result
 
-    # # VM creation
-    # - name: Create VMs
-    #   command: virt-clone --original base_VM -n {{item}} --auto-clone
-    #   with_items:
-    #     - "{{VMS}}"
-    #   when: item not in result.list_vms
-    #   tags:
-    #     - create_vm
+    # VM creation
+    - name: Create VMs
+      command: virt-clone --original base -n {{item}} --auto-clone
+      with_items:
+        - "{{VMS}}"
+      when: item not in result.list_vms
+      tags:
+        - create_vm
     
-    # - name: Start VMs
-    #   virt:
-    #     name: "{{item}}"
-    #     state: running
-    #   with_items:
-    #     - "{{VMS}}"
+    - name: Start VMs
+      virt:
+        name: "{{item}}"
+        state: running
+      with_items:
+        - "{{VMS}}"
     
+    # Attaching interfaces
+    - include_tasks: step1.yml
+      with_items:
+        - "{{VMS}}"
+      loop_control:
+        loop_var: outer_item
+
     # Run dhclient inside each VMs
-
-    # # Attaching interfaces
-    # - include_tasks: step1.yml
-    #   with_items:
-    #     - "{{VMS}}"
-    #   loop_control:
-    #     loop_var: outer_item
-
     
