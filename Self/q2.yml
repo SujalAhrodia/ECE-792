@@ -5,11 +5,16 @@
     vmVar: "{{ lookup('file', './inputs/input.json') | from_json }}"
     swVar: "{{ lookup('file', './inputs/switches.json') | from_json }}"
    tasks:
-    # Part 1: Create OVS Bridges 
-    - name: Add dependencies
+    - name: Add dependencies via pip
       pip:
         name: lxml
-    
+
+    - name: Add dependencies via apt
+      apt:
+        name: dnsmasq
+        state: present
+
+    # Part 1: Create OVS Bridges 
     - name: Making list of switches
       vars: 
         SWS: []
@@ -44,8 +49,6 @@
       tags:
         - init
 
-    # Add ip table rule for NAT bridge
-
     # Part 2: Defining the networks
     - name: Define network
       virt_net:
@@ -70,36 +73,42 @@
       tags:
         - start_ovs_net
     
-    - name: Making list of VMs 
-      vars: 
-        VMS: []
-      set_fact:
-        VMS: "{{ VMS + [item.name] }}"
-      with_items:
-        - "{{vmVar.input}}"
-      tags:
-        - make_vm_list
+      #Add DNS Config via dnsmasq only for L3 and Internet
+    - name: DNS Config
+        
+      #Add ip table rule for L3 and Internet
 
-    - name: Get existing VMs
-      virt:
-        command: list_vms
-      register: result
 
-    # VM creation
-    - name: Create VMs
-      command: virt-clone --original base_VM -n {{item}} --auto-clone
-      with_items:
-        - "{{VMS}}"
-      when: item not in result.list_vms
-      tags:
-        - create_vm
+    # - name: Making list of VMs 
+    #   vars: 
+    #     VMS: []
+    #   set_fact:
+    #     VMS: "{{ VMS + [item.name] }}"
+    #   with_items:
+    #     - "{{vmVar.input}}"
+    #   tags:
+    #     - make_vm_list
+
+    # - name: Get existing VMs
+    #   virt:
+    #     command: list_vms
+    #   register: result
+
+    # # VM creation
+    # - name: Create VMs
+    #   command: virt-clone --original base_VM -n {{item}} --auto-clone
+    #   with_items:
+    #     - "{{VMS}}"
+    #   when: item not in result.list_vms
+    #   tags:
+    #     - create_vm
     
-    - name: Start VMs
-      virt:
-        name: "{{item}}"
-        state: running
-      with_items:
-        - "{{VMS}}"
+    # - name: Start VMs
+    #   virt:
+    #     name: "{{item}}"
+    #     state: running
+    #   with_items:
+    #     - "{{VMS}}"
     
     # Run dhclient inside each VMs
 
