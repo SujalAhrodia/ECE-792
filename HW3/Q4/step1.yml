@@ -1,7 +1,0 @@
----
-- name: Step 1
-  include_tasks: attach.yml
-  with_items:
-    - "{{vmVar.input}}"
-  loop_control:
-    loop_var: inner_item

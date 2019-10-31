@@ -1,6 +1,0 @@
----
-- name: Attach
-  command: virsh attach-interface --domain {{outer_item}} --type network --source {{item}} --model virtio --config --live
-  with_items:
-    - "{{inner_item.list}}"
-  when: inner_item.name == outer_item
