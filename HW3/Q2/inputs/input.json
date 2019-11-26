@@ -1,15 +1,7 @@
 {
 	"input": [{
 			"name": "VM1",
-			"list": ["Internet", "L2", "L3"]
-		},
-		{
-			"name": "VM2",
-			"list": ["Internet"]
-		},
-		{
-			"name": "VM3",
-			"list": ["L2", "L3"]
+			"list": ["net_t1_vm1"]
 		}
 	]
 }

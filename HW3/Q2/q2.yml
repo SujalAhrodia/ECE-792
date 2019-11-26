@@ -124,6 +124,8 @@
         - "{{VMS}}"
       loop_control:
         loop_var: outer_item
+      tags:
+        - attach
 
     # Run dhclient inside each VMs
     

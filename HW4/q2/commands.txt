@@ -1,0 +1,23 @@
+
+1. sudo docker build -t 'image_name' .
+
+2. sudo docker run --privileged -itd --net=none --name q2cs1 goldenimage
+
+# NOTE: sudo docker run --privileged -it --net=none --name q2cs1 goldenimage // does not run the container in background
+
+# Fetch the PID of container
+3. sudo docker inspect --format '{{.State.Pid}}' 'container_name'
+
+# create veth pairs on host 
+4. sudo ip link add cs1_veth0 type veth peer name hcs1_veth0
+
+# send interfaces to container 
+5.  sudo ip link set netns 3416 dev cs1_veth0
+
+# send interfaces to virbr0 
+6.  sudo brctl addif virbr0 hcs1_veth0
+
+# Up both the ends
+7. sudo ip link set dev 'device' Up
+
+8. dhclient on container
