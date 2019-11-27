@@ -1,9 +1,6 @@
 --- 
 - hosts: localhost
   become: true
-  vars:
-    cont_name: "{{cname}}"
-  
   tasks:
   - name: Install pip
     apt: 
@@ -15,7 +12,7 @@
     pip:
       name: docker
 
-  - name: Build an image and push it to a private repo
+  - name: Build an image
     docker_image:
       build:
         path: ./
@@ -26,9 +23,32 @@
   
   - name: Create container
     docker_container:
-      name: "{{cont_name}}"
+      name: "{{cname}}"
       image: silverimage
       purge_networks: yes
       privileged: yes
       detach: yes
       interactive: yes
+    register: test
+  
+  - name: PID of container
+    set_fact:
+      pid: "{{test.ansible_facts.docker_container.State.Pid}}"
+  
+  - name: Add veth pair
+    command: ip link add {{cname}}_veth0 type veth peer name h{{cname}}_veth0
+
+  - name: Send to container
+    command: ip link set netns {{pid}} dev {{cname}}_veth0
+
+  - name: Add to Default bridge
+    command: brctl addif virbr0 h{{cname}}_veth0
+
+  - name: Up the interface at host
+    command: ip link set dev h{{cname}}_veth0 up
+
+  - name: Up the interface at container
+    command: docker exec {{cname}} ip link set dev {{cname}}_veth0 up
+
+  - name: Run dhclient in container
+    command: docker exec {{cname}} dhclient {{cname}}_veth0
