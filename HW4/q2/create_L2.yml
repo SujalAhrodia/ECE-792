@@ -1,0 +1,71 @@
+---
+- hosts: localhost
+  gather_facts: false
+  become: true
+
+  tasks:
+  - name: Create a new bridge
+    command: '{{items}}'
+    with_items:
+      - brctl addbr {{nname}}
+      - ip link set dev {{nname}} up
+    tags: create
+
+  - name: Get PID of container1
+    docker_container_info:
+      name: '{{c1name}}'
+    register: result
+
+  - set_fact: 
+        c1_id: '{{result.container.State.Pid}}'
+
+  - name: Get PID of container2
+    docker_container_info:
+      name: '{{c2name}}'
+    register: result
+
+  - set_fact: 
+      c2_id: '{{result.container.State.Pid}}'
+
+  - debug:
+     var: c1_id,c2_id
+
+  - name: Create veth pairs between bridge and containers
+    command: "{{item}}"
+    with_items:
+      - ip link add {{c1name}}_{{nname}} type veth peer name {{nname}}_{{c1name}}
+      - ip link add {{c2name}}_{{nname}} type veth peer name {{nname}}_{{c2name}} 
+      - ip link add {{nname}}_LC1 type veth peer name LC1_{{nname}}
+    tags: veth 
+  
+  - name: Attach interfaces
+    command: "{{item}}"
+    with_items:
+      - brctl addif {{nname}} {{nname}}_{{c1name}}
+      - ip link set netns {{c1_id}} dev {{c1name}}_{{nname}}
+      - brctl addif {{nname}} {{nname}}_{{c2name}}
+      - ip link set netns {{c2_id}} dev {{c2name}}_{{nname}}
+      - brctl addif {{nname}} {{nname}}_LC1
+      - ip link set netns 30843 dev LC1_{{nname}}
+
+  - name: Bring above interfaces up
+    command: ip link set dev {{item}} up
+    with_items:
+        - "{{nname}}_{{c1name}}"
+        - "{{nname}}_{{c2name}}"
+        - "{{nname}}_LC1"
+
+  - name: Interfaces up inside containers
+    command: '{{item}}'
+    with_items:
+      - docker exec {{c1name}} ip link set dev {{c1name}}_{{nname}} up
+      - docker exec {{c2name}} ip link set dev {{c2name}}_{{nname}} up
+      - docker exec q2lc1 ip link set dev LC1_{{nname}} up
+    tags: up
+
+  - name: Assign addresses
+    command: '{{item}}'
+    with_items:
+      - docker exec {{c1name}} ip addr add 118.0.0.1/24 dev {{c1name}}_{{nname}}
+      - docker exec {{c2name}} ip addr add 118.0.0.2/24 dev {{c2name}}_{{nname}}
+    tags: address
