@@ -1,0 +1,68 @@
+---
+- hosts: localhost
+  gather_facts: false
+  become: true
+
+  tasks:
+  - name: Get PID of container1
+    docker_container_info:
+      name: '{{c1name}}'
+    register: result
+
+  - set_fact:
+      c1_id: '{{result.container.State.Pid}}'
+  
+  - name: Get PID of container2
+    docker_container_info:
+      name: '{{c2name}}'
+    register: result1
+
+  - set_fact:
+      c2_id: '{{result1.container.State.Pid}}'
+  
+  - name: Get PID of LC1
+    docker_container_info:
+      name: q2lc1
+    register: result2
+  
+  - set_fact:
+      lc1_id: '{{result2.container.State.Pid}}'
+  
+  - name: Get PID of LC2
+    docker_container_info:
+      name: q2lc2
+    register: result3
+  
+  - set_fact:
+      lc2_id: '{{result3.container.State.Pid}}'
+  
+  - name: Add veth pairs
+    command: "{{item}}"
+    with_items:
+      - ip link add {{c1name}}_q2lc1 type veth peer name q2lc1_{{c1name}}
+      - ip link add {{c2name}}_q2lc2 type veth peer name q2lc2_{{c2name}}
+  
+  - name: Send interfaces to containers
+    command: "{{item}}"
+    with_items:
+      - ip link set netns {{c1_id}} dev {{c1name}}_q2lc1
+      - ip link set netns {{lc1_id}} dev q2lc1_{{c1name}}
+      - ip link set netns {{c2_id}} dev {{c2name}}_q2lc2
+      - ip link set netns {{lc2_id}} dev q2lc2_{{c2name}}
+
+  - name: Up the interfaces
+    command: "{{item}}"
+    with_items:
+      - docker exec {{c1name}} ip link set dev {{c1name}}_q2lc1 up
+      - docker exec q2lc1 ip link set dev q2lc1_{{c1name}} up
+      - docker exec {{c2name}} ip link set dev {{c2name}}_q2lc2 up
+      - docker exec q2lc2 ip link set dev q2lc2_{{c2name}} up
+
+  - name: Assign IP address
+    command: "{{item}}"
+    with_items:
+      - docker exec {{c1name}} ip addr add 120.0.0.1/24 dev {{c1name}}_q2lc1
+      - docker exec q2lc1 ip addr add 120.0.0.2/24 dev q2lc1_{{c1name}}
+      - docker exec {{c2name}} ip addr add 120.0.0.3/24 dev {{c2name}}_q2lc2
+      - docker exec q2lc2 ip addr add 120.0.0.4/24 dev q2lc2_{{c2name}}
+
