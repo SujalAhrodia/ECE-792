@@ -61,17 +61,16 @@
   - name: Assign IP address
     command: "{{item}}"
     with_items:
-      - docker exec {{c1name}} ip addr add 120.0.0.1/24 dev {{c1name}}_q2lc1
-      - docker exec q2lc1 ip addr add 120.0.0.2/24 dev q2lc1_{{c1name}}
-      - docker exec {{c2name}} ip addr add 121.0.0.1/24 dev {{c2name}}_q2lc2
-      - docker exec q2lc2 ip addr add 121.0.0.2/24 dev q2lc2_{{c2name}}
-  
+      - docker exec {{c1name}} ip addr add 122.0.0.1/24 dev {{c1name}}_q2lc1
+      - docker exec q2lc1 ip addr add 122.0.0.2/24 dev q2lc1_{{c1name}}
+      - docker exec {{c2name}} ip addr add 123.0.0.1/24 dev {{c2name}}_q2lc2
+      - docker exec q2lc2 ip addr add 123.0.0.2/24 dev q2lc2_{{c2name}}
+
   - name: Add routes
     command: "{{item}}"
     with_items:
-      - docker exec q2lc1 ip route add 121.0.0.0/24 via 116.0.0.2 dev q2lc1_sc2
-      - docker exec q2lc2 ip route add 120.0.0.0/24 via 117.0.0.2 dev q2lc2_sc2
-      - docker exec q2sc2 ip route add 121.0.0.0/24 via 117.0.0.1 dev q2sc2_lc2
-      - docker exec q2sc2 ip route add 120.0.0.0/24 via 116.0.0.1 dev q2sc2_lc1
-      - docker exec {{c1name}} ip route add 121.0.0.0/24 via 120.0.0.2 dev {{c1name}}_q2lc1 
-      - docker exec {{c2name}} ip route add 120.0.0.0/24 via 121.0.0.2 dev {{c2name}}_q2lc2
+      - docker exec q2lc1 ip route add 123.0.0.0/24 dev gre1
+      - docker exec q2lc2 ip route add 122.0.0.0/24 dev gre1
+      - docker exec {{c1name}} ip route add 123.0.0.0/24 via 122.0.0.2 dev {{c1name}}_q2lc1 
+      - docker exec {{c2name}} ip route add 122.0.0.0/24 via 123.0.0.2 dev {{c2name}}_q2lc2
+
