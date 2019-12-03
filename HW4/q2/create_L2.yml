@@ -5,7 +5,7 @@
 
   tasks:
   - name: Create a new bridge
-    command: '{{items}}'
+    command: '{{item}}'
     with_items:
       - brctl addbr {{nname}}
       - ip link set dev {{nname}} up
